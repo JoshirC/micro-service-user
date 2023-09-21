@@ -31,5 +31,5 @@ func Connect() {
 }
 
 func autoMigrate(connection *gorm.DB) {
-	connection.Debug().AutoMigrate(&models.User{}, &models.RegisterBuyUser{})
+	connection.Debug().AutoMigrate(&models.Users{}, &models.RegisterBuy{})
 }
