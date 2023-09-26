@@ -16,12 +16,17 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
-	db.DB.Create(&newUser)
-
-	return c.Status(201).JSON(fiber.Map{
-		"success": true,
-		"data":    newUser,
+	result := db.DB.Create(&newUser)
+	if result != nil {
+		return c.Status(201).JSON(fiber.Map{
+			"success": true,
+			"data":    newUser,
+		})
+	}
+	return c.Status(400).JSON(fiber.Map{
+		"message": "Bad request",
 	})
+
 }
 
 func GetUsers(c *fiber.Ctx) error {

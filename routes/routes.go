@@ -12,7 +12,7 @@ func Setup(app *fiber.App) {
 
 	//users routes
 	app.Get("/users", controllers.GetUsers)
-	app.Post("/users", controllers.CreateUser)
+	app.Post("/users/new", controllers.CreateUser)
 	//app.Delete("/users", controllers.DeleteUser)
 
 	//registerBuy routes

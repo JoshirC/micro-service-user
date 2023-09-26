@@ -1,12 +1,6 @@
 package middleware
 
-import (
-	"os"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
-)
-
+/*
 func AuthenticateToken(tokenString string) error {
 	//token check
 	_, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -41,4 +35,4 @@ func Validate(c *fiber.Ctx) error {
 		})
 	}
 
-}
+} */
