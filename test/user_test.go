@@ -8,6 +8,7 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
+
 	var reqCreateUser = models.Users{
 		Name:     "juan",
 		Rut:      "1234",

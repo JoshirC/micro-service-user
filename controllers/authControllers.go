@@ -1,81 +1,78 @@
 package controllers
 
 import (
-	"net/http"
+	"encoding/json"
+	"errors"
+	"os"
+	"time"
 
 	db "github.com/JoshirC/micro-service-user.git/config"
 	"github.com/JoshirC/micro-service-user.git/models"
-	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Login(c *fiber.Ctx) error {
-	var body struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+func Login(body []byte) (string, error) {
+	//Obtener el correo y contraseña desde el body del request
+	var loginData models.LoginData
 
-	if c.BodyParser(&body) != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"message": "Bad request",
-		})
+	err := json.Unmarshal(body, &loginData)
+	if err != nil {
+		return "", err
 	}
+	//Buscar al usuario en la DB
 	var user models.Users
-	db.DB.Where("email = ?", body.Email).First(&user)
+	db.DB.Where("email = ?", loginData.Email).First(&user)
 
 	if user.ID == 0 {
-		return c.Status(404).JSON(fiber.Map{
-			"message": "User not found",
-		})
+		return "", errors.New("User not found")
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		return c.Status(401).JSON(fiber.Map{
-			"message": "Incorrect password",
-		})
+	//Verificar la contraseña
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
+		return "", errors.New("Incorrect password")
+
 	}
-	return c.JSON(fiber.Map{
-		"success": true,
-		"message": "Logged in",
-		"data":    user,
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"Issuer":    user.ID,
+		"ExpiresAt": time.Now().Add(time.Hour * 24 * 30).Unix(), //30 days
 	})
-}
-func SingUp(c *fiber.Ctx) error {
-	var body struct {
-		Name     string `json:"name"`
-		Rut      string `json:"rut"`
-		Password string `json:"password"`
-		Email    string `json:"email"`
-		City     string `json:"city"`
-	}
-	if c.BodyParser(&body) != nil {
-		return c.Status(400).JSON(fiber.Map{
-			"message": "Bad request",
-		})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		return "", errors.New("Token Expired or invalid")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	return tokenString, nil
+}
+func SingUp(body []byte) error {
+	var singUpData models.SingUpData
+
+	err := json.Unmarshal(body, &singUpData)
+	if err != nil {
+		return err
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(singUpData.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Internal serveral error",
-		})
+		return errors.New("Failed to hash password")
 	}
 
 	user := models.Users{
-		Name:     body.Name,
-		Rut:      body.Rut,
+		Name:     singUpData.Name,
+		Rut:      singUpData.Rut,
 		Password: string(hash),
-		Email:    body.Email,
-		City:     body.City,
+		Email:    singUpData.Email,
+		City:     singUpData.City,
 	}
 	result := db.DB.Create(&user)
 
 	if result.Error != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Internal error",
-		})
+		return errors.New("Failed to create user")
 	}
 
-	return c.Status(http.StatusCreated).JSON(user)
+	//Respuesta exitosa
+	return nil
 }
