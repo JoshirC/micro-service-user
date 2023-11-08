@@ -34,6 +34,9 @@ func Login(body []byte) (string, error) {
 		return "", errors.New("Incorrect password")
 
 	}
+
+	//Generar JWT Token
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"Issuer":    user.ID,
 		"ExpiresAt": time.Now().Add(time.Hour * 24 * 30).Unix(), //30 days
@@ -45,8 +48,12 @@ func Login(body []byte) (string, error) {
 	}
 
 	return tokenString, nil
+
 }
+
 func SingUp(body []byte) error {
+	//Obtener los campos desde el body del request
+
 	var singUpData models.SingUpData
 
 	err := json.Unmarshal(body, &singUpData)
@@ -54,12 +61,14 @@ func SingUp(body []byte) error {
 		return err
 	}
 
+	// Generar un hash de la contraseña para almacenarla de manera segura
 	hash, err := bcrypt.GenerateFromPassword([]byte(singUpData.Password), bcrypt.DefaultCost)
 
 	if err != nil {
 		return errors.New("Failed to hash password")
 	}
 
+	// Crear el usuario en la DB
 	user := models.Users{
 		Name:     singUpData.Name,
 		Rut:      singUpData.Rut,
@@ -75,4 +84,5 @@ func SingUp(body []byte) error {
 
 	//Respuesta exitosa
 	return nil
+
 }

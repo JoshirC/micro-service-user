@@ -11,11 +11,10 @@ import (
 
 var DB *gorm.DB
 
-func Connect() {
+func SetupDatabase() {
 	var dbURL = os.Getenv("DB_URL")
-
 	if dbURL == "" {
-		panic("DB_URL enviroment variable missing")
+		panic("DB_URL environment variable missing")
 	}
 
 	var err error
@@ -28,8 +27,9 @@ func Connect() {
 	}
 
 	autoMigrate(DB)
+
 }
 
 func autoMigrate(connection *gorm.DB) {
-	connection.Debug().AutoMigrate(&models.Users{}, &models.RegisterBuy{})
+	connection.Debug().AutoMigrate(&models.Users{})
 }
