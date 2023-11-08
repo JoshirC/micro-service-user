@@ -61,7 +61,6 @@ func SingUp(body []byte) error {
 		return err
 	}
 
-	// Generar un hash de la contraseña para almacenarla de manera segura
 	hash, err := bcrypt.GenerateFromPassword([]byte(singUpData.Password), bcrypt.DefaultCost)
 
 	if err != nil {
