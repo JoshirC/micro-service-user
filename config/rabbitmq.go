@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -18,11 +19,12 @@ var conn *amqp.Connection
 
 func SetupRabbitMQ() {
 	URL := os.Getenv("RABBITMQ_URL")
+
 	if URL == "" {
 		failOnError(nil, "Failed to get RabbitMQ URL")
 	}
 
-	//fmt.Println(URL)
+	fmt.Println(URL)
 	conn, err := amqp.Dial(URL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 
