@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -13,14 +14,13 @@ import (
 )
 
 func Login(body []byte) (string, error) {
-	//Obtener el correo y contraseña desde el body del request
 	var loginData models.LoginData
 
 	err := json.Unmarshal(body, &loginData)
 	if err != nil {
 		return "", err
 	}
-	//Buscar al usuario en la DB
+
 	var user models.Users
 	db.DB.Where("email = ?", loginData.Email).First(&user)
 
@@ -28,14 +28,10 @@ func Login(body []byte) (string, error) {
 		return "", errors.New("User not found")
 	}
 
-	//Verificar la contraseña
-
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
 		return "", errors.New("Incorrect password")
 
 	}
-
-	//Generar JWT Token
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"Issuer":    user.ID,
@@ -52,7 +48,6 @@ func Login(body []byte) (string, error) {
 }
 
 func SingUp(body []byte) error {
-	//Obtener los campos desde el body del request
 
 	var singUpData models.SingUpData
 
@@ -67,7 +62,6 @@ func SingUp(body []byte) error {
 		return errors.New("Failed to hash password")
 	}
 
-	// Crear el usuario en la DB
 	user := models.Users{
 		Name:     singUpData.Name,
 		Rut:      singUpData.Rut,
@@ -81,7 +75,7 @@ func SingUp(body []byte) error {
 		return errors.New("Failed to create user")
 	}
 
-	//Respuesta exitosa
+	fmt.Println("Se agrego al usuario")
 	return nil
 
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -61,6 +62,69 @@ func registerConsumer(ch *amqp.Channel, q amqp.Queue) <-chan amqp.Delivery {
 	return msgs
 }
 
+func TestSignUp(ch *amqp.Channel) {
+	signUpData := map[string]interface{}{
+		"Name":     "UsuarioPrueba",
+		"Rut":      "123456789",
+		"Password": "Password123",
+		"Email":    "usuario_prueba@example.com",
+		"City":     "CiudadPrueba",
+	}
+
+	signUpJSON, err := json.Marshal(signUpData)
+	if err != nil {
+		log.Printf("Failed to marshal test sign-up data: %v", err)
+		return
+	}
+
+	// Simula el envío de un mensaje a través de RabbitMQ
+	d := amqp.Delivery{
+		Body:          signUpJSON,
+		ContentType:   "application/json",
+		CorrelationId: "correlation-id",
+		ReplyTo:       "reply-to",
+		Type:          "SIGNUP_USER",
+		Headers:       amqp.Table{},
+		DeliveryMode:  1, // Persistent
+		Expiration:    "",
+		Priority:      0,
+		Redelivered:   false,
+	}
+
+	internal.Handler(d, ch)
+	log.Println("Test sign-up message handled successfully")
+}
+
+func TestSignIn(ch *amqp.Channel) {
+	signInData := map[string]interface{}{
+		"Username": "UsuarioPrueba",
+		"Password": "Password123",
+	}
+
+	signInJSON, err := json.Marshal(signInData)
+	if err != nil {
+		log.Printf("Failed to marshal test sign-in data: %v", err)
+		return
+	}
+
+	// Simula el envío de un mensaje a través de RabbitMQ
+	d := amqp.Delivery{
+		Body:          signInJSON,
+		ContentType:   "application/json",
+		CorrelationId: "correlation-id",
+		ReplyTo:       "reply-to",
+		Type:          "LOGIN_USER",
+		Headers:       amqp.Table{},
+		DeliveryMode:  1, // Persistent
+		Expiration:    "",
+		Priority:      0,
+		Redelivered:   false,
+	}
+
+	internal.Handler(d, ch)
+	log.Println("Test sign-in message handled successfully")
+}
+
 func main() {
 	fmt.Println("Users MS starting...")
 
@@ -86,5 +150,8 @@ func main() {
 	}()
 
 	log.Printf(" [*] Awaiting RPC requests")
+
+	TestSignIn(ch)
 	<-forever
+
 }
