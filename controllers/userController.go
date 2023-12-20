@@ -9,7 +9,7 @@ import (
 
 func GetUsers() ([]models.Users, error) {
 	var users []models.Users
-	err := db.DB.Select("id, first_name, last_name, email").Find(&users).Error
+	err := db.DB.Select("id, name, email").Find(&users).Error
 	return users, err
 }
 
