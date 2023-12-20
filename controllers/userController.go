@@ -15,7 +15,7 @@ func GetUsers() ([]models.Users, error) {
 
 func GetUser(userkID uint) (models.Users, error) {
 	var user models.Users
-	err := db.DB.Select("id, first_name, last_name, email").Where("id = ?", userkID).First(&user).Error
+	err := db.DB.Select("id,name , email").Where("id = ?", userkID).First(&user).Error
 
 	return user, err
 }
@@ -29,7 +29,7 @@ func GetUserByEmail(body []byte) (models.Users, error) {
 	}
 
 	var user models.Users
-	err = db.DB.Select("id, first_name, last_name, email").Where("email = ?", loginData.Email).First(&user).Error
+	err = db.DB.Select("id, name, email").Where("email = ?", loginData.Email).First(&user).Error
 	return user, err
 }
 
