@@ -23,13 +23,28 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 
 	var response models.Response
 	var tokenString string
-	actionType := d.Type
+
+	var message struct {
+		Pattern string          `json:"pattern"`
+		Data    json.RawMessage `json:"data"`
+		ID      string          `json:"id"`
+	}
+
+	err := json.Unmarshal(d.Body, &message)
+	if err != nil {
+		log.Printf("Error al desglosar el cuerpo del mensaje: %s", err)
+		return
+	}
+
+	actionType := message.Pattern
+	log.Printf(" [x] Received %s", actionType)
 	switch actionType {
 	case "LOGIN_USER":
 		log.Println(" [.] Login user")
 
 		var err error
-		tokenString, err = controllers.Login(d.Body)
+
+		tokenString, err = controllers.Login(message.Data)
 
 		if err != nil {
 			response = models.Response{
@@ -38,7 +53,7 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 				Data:    []byte(err.Error()),
 			}
 		} else {
-			user, err := controllers.GetUserByEmail(d.Body)
+			user, err := controllers.GetUserByEmail(message.Data)
 			JSONUser, err := json.Marshal(user)
 			failOnError(err, "Failed to marshal user")
 			response = models.Response{
@@ -51,7 +66,7 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 	case "SIGNUP_USER":
 		log.Println(" [.] Creating User")
 
-		err := controllers.SingUp(d.Body)
+		err := controllers.SingUp(message.Data)
 		failOnError(err, "Failed to create User")
 
 		response = models.Response{
@@ -65,7 +80,7 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 		}
 
 		log.Println(" [.] Getting user")
-		err := json.Unmarshal(d.Body, &data)
+		err := json.Unmarshal(message.Data, &data)
 		failOnError(err, "Failed to Unmarshal user")
 
 		user, err := controllers.GetUser(data.ID)
@@ -80,11 +95,8 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 		}
 
 	case "CREATE_USER":
-		log.Println(" [.] Creating User")
-
-		// Agregar lógica para crear un nuevo usuario
 		var newUser models.Users
-		err := json.Unmarshal(d.Body, &newUser)
+		err := json.Unmarshal(message.Data, &newUser)
 		failOnError(err, "Failed to Unmarshal user")
 
 		err = controllers.CreateUser(newUser)
@@ -105,9 +117,8 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 	case "UPDATE_USER":
 		log.Println(" [.] Updating User")
 
-		// Agregar lógica para actualizar un usuario
 		var updatedUser models.Users
-		err := json.Unmarshal(d.Body, &updatedUser)
+		err := json.Unmarshal(message.Data, &updatedUser)
 		failOnError(err, "Failed to Unmarshal user")
 
 		err = controllers.UpdateUser(updatedUser.ID, updatedUser)
@@ -128,11 +139,10 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 	case "DELETE_USER":
 		log.Println(" [.] Deleting User")
 
-		// Agregar lógica para eliminar un usuario
 		var userID struct {
 			ID uint `json:"id"`
 		}
-		err := json.Unmarshal(d.Body, &userID)
+		err := json.Unmarshal(message.Data, &userID)
 		failOnError(err, "Failed to Unmarshal user")
 
 		err = controllers.DeleteUser(userID.ID)
