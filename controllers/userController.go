@@ -9,13 +9,13 @@ import (
 
 func GetUsers() ([]models.Users, error) {
 	var users []models.Users
-	err := db.DB.Select("id, name, email").Find(&users).Error
+	err := db.DB.Select("id, name, rut, email, city").Find(&users).Error
 	return users, err
 }
 
 func GetUser(userkID uint) (models.Users, error) {
 	var user models.Users
-	err := db.DB.Select("id,name , email").Where("id = ?", userkID).First(&user).Error
+	err := db.DB.Select("id, name, rut, email, city").Where("id = ?", userkID).First(&user).Error
 
 	return user, err
 }
@@ -29,7 +29,7 @@ func GetUserByEmail(body []byte) (models.Users, error) {
 	}
 
 	var user models.Users
-	err = db.DB.Select("id, name, email").Where("email = ?", loginData.Email).First(&user).Error
+	err = db.DB.Select("id, name, rut, email, city").Where("email = ?", loginData.Email).First(&user).Error
 	return user, err
 }
 

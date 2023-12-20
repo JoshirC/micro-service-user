@@ -56,6 +56,7 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 			user, err := controllers.GetUserByEmail(message.Data)
 			JSONUser, err := json.Marshal(user)
 			failOnError(err, "Failed to marshal user")
+			log.Printf("Lo que devuelve: %s", JSONUser)
 			response = models.Response{
 				Success: "success",
 				Message: "User logged",
@@ -107,6 +108,7 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 				Data:    []byte(err.Error()),
 			}
 		} else {
+			log.Println(nil)
 			response = models.Response{
 				Success: "success",
 				Message: "User Created",
@@ -163,7 +165,7 @@ func Handler(d amqp.Delivery, ch *amqp.Channel) {
 
 	responseJSON, err := json.Marshal(response)
 	failOnError(err, "Failed to marshal response")
-
+	log.Printf("Lo que retorna final: %s", responseJSON)
 	err = ch.PublishWithContext(ctx,
 		"",        // exchange
 		d.ReplyTo, // routing key
