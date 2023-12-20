@@ -15,7 +15,7 @@ func GetUsers() ([]models.Users, error) {
 
 func GetUser(userkID uint) (models.Users, error) {
 	var user models.Users
-	err := db.DB.Select("id, title, description, done").Where("id = ?", userkID).First(&user).Error
+	err := db.DB.Select("id, first_name, last_name, email").Where("id = ?", userkID).First(&user).Error
 
 	return user, err
 }
