@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
 
 	"github.com/JoshirC/micro-service-user.git/config"
 	"github.com/JoshirC/micro-service-user.git/internal"
@@ -63,23 +61,7 @@ func registerConsumer(ch *amqp.Channel, q amqp.Queue) <-chan amqp.Delivery {
 	return msgs
 }
 
-func init() {
-	command := "docker-compose"
-	args := []string{"up", "-d"}
-	cmd := exec.Command(command, args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println("Error al ejecutar el comando:", err)
-		os.Exit(1)
-	}
-
-}
-
 func main() {
-	fmt.Println("Starting...")
-
 	fmt.Println("Users MS starting...")
 
 	godotenv.Load()
